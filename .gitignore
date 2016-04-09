@@ -97,6 +97,12 @@ ID
 *.orig
 *~
 \#*#
+*.old
+*.bak
+*.log
+*.org
+*.rej
+*.tmp
 
 #
 # Leavings from module signing

@@ -51,6 +51,7 @@ my $max_line_length = 80;
 my $ignore_perl_version = 0;
 my $minimum_perl_version = 5.10.0;
 my $min_conf_desc_length = 4;
+my $chk_utf8 = 1;
 my $spelling_warn = 0;
 my $spelling_file = "$D/spelling.txt";
 my $codespell = 0;
@@ -111,6 +112,7 @@ Options:
                              file.  It's your fault if there's no backup or git
   --ignore-perl-version      override checking of perl version.  expect
                              runtime errors.
+  --no-utf8                  disable invalid UTF-8 check
   --spelling                 Warn about typos and spelling problems
   --codespell                Use the codespell dictionary for spelling/typos
                              (default:/usr/share/codespell/dictionary.txt)
@@ -208,6 +210,7 @@ GetOptions(
 	'ignore-perl-version!' => \$ignore_perl_version,
 	'debug=s'	=> \%debug,
 	'test-only=s'	=> \$tst_only,
+	'utf8!'		=> \$chk_utf8,
 	'spelling!'	=> \$spelling_warn,
 	'codespell!'	=> \$codespell,
 	'codespellfile=s'	=> \$codespellfile,
@@ -2606,7 +2609,7 @@ sub process {
 		}
 
 # UTF-8 regex found at http://www.w3.org/International/questions/qa-forms-utf-8.en.php
-		if (($realfile =~ /^$/ || $line =~ /^\+/) &&
+		if ($chk_utf8 && ($realfile =~ /^$/ || $line =~ /^\+/) &&
 		    $rawline !~ m/^$UTF8*$/) {
 			my ($utf8_prefix) = ($rawline =~ /^($UTF8*)/);
 

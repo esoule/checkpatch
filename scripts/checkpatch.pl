@@ -22,6 +22,7 @@ my $quiet = 0;
 my $tree = 1;
 my $chk_signoff = 1;
 my $chk_patch = 1;
+my $chk_utf8 = 1;
 my $tst_only;
 my $emacs = 0;
 my $terse = 0;
@@ -77,6 +78,7 @@ Options:
   --show-types               show the message "types" in the output
   --root=PATH                PATH to the kernel tree root
   --no-summary               suppress the per-file summary
+  --no-utf8                  disable invalid UTF-8 check
   --mailback                 only produce a report in case of warnings/errors
   --summary-file             include the filename in summary
   --debug KEY=[0|1]          turn on/off debugging of KEY, where KEY is one of
@@ -136,6 +138,7 @@ GetOptions(
 	'q|quiet+'	=> \$quiet,
 	'tree!'		=> \$tree,
 	'signoff!'	=> \$chk_signoff,
+	'utf8!'		=> \$chk_utf8,
 	'patch!'	=> \$chk_patch,
 	'emacs!'	=> \$emacs,
 	'terse!'	=> \$terse,
@@ -2458,7 +2461,7 @@ sub process {
 		}
 
 # UTF-8 regex found at http://www.w3.org/International/questions/qa-forms-utf-8.en.php
-		if (($realfile =~ /^$/ || $line =~ /^\+/) &&
+		if ($chk_utf8 && ($realfile =~ /^$/ || $line =~ /^\+/) &&
 		    $rawline !~ m/^$UTF8*$/) {
 			my ($utf8_prefix) = ($rawline =~ /^($UTF8*)/);
 

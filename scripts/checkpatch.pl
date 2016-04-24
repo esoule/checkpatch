@@ -30,6 +30,7 @@ my $showfile = 0;
 my $file = 0;
 my $check = 0;
 my $check_orig = 0;
+my $chk_braces_single = 0;
 my $summary = 1;
 my $mailback = 0;
 my $summary_file = 0;
@@ -72,6 +73,7 @@ Options:
   --showfile                 emit diffed file position, not input file position
   -f, --file                 treat FILE as regular source file
   --subjective, --strict     enable more subjective tests
+  --braces-single            warn about braces for single statement blocks
   --types TYPE(,TYPE2...)    show only these comma separated message types
   --ignore TYPE(,TYPE2...)   ignore various comma separated message types
   --max-line-length=n        set the maximum line length, if exceeded, warn
@@ -148,6 +150,7 @@ GetOptions(
 	'f|file!'	=> \$file,
 	'subjective!'	=> \$check,
 	'strict!'	=> \$check,
+	'braces-single!' => \$chk_braces_single,
 	'ignore=s'	=> \@ignore,
 	'types=s'	=> \@use,
 	'show-types!'	=> \$show_types,

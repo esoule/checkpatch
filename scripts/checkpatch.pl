@@ -4740,12 +4740,13 @@ sub process {
 		}
 
 # check for redundant bracing round if etc
-		if ($line =~ /(^.*)\bif\b/ && $1 !~ /else\s*$/) {
+		if ($line =~ /(^.*)\bif\b/ && $1 !~ /else\s*$/ &&
+					!$is_prepro) {
 			my ($level, $endln, @chunks) =
 				ctx_statement_full($linenr, $realcnt, 1);
 			#print "chunks<$#chunks> linenr<$linenr> endln<$endln> level<$level>\n";
 			#print "APW: <<$chunks[1][0]>><<$chunks[1][1]>>\n";
-			if ($#chunks > 0 && $level == 0) {
+			if ($#chunks >= 0 && $level == 0) {
 				my @allowed = ();
 				my $allow = 0;
 				my $seen = 0;
@@ -4792,7 +4793,7 @@ sub process {
 						$sum_allowed += $_;
 					}
 				}
-				if ($seen) {
+				if ($chk_braces_single && $seen) {
 					if ($sum_allowed == 0) {
 						WARN("BRACES",
 						     "braces {} are not necessary for any arm of this statement\n" . $herectx);
@@ -4802,10 +4803,21 @@ sub process {
 						    "braces {} should be used on all arms of this statement\n" . $herectx);
 					}
 				}
+
+				## if enforcing braces for single statement blocks
+				if (!$chk_braces_single) {
+					if (!$seen ||
+						  ($sum_allowed != $allow &&
+						  $seen != $allow)) {
+						WARN("BRACES",
+						     "braces {} are necessary on all arms of this statement ($seen)\n" . $herectx);
+					}
+				}
 			}
 		}
 		if (!defined $suppress_ifbraces{$linenr - 1} &&
-					$line =~ /\b(if|while|for|else)\b/) {
+					$line =~ /\b(if|while|for|else)\b/ &&
+					!$is_prepro) {
 			my $allowed = 0;
 
 			# Check the pre-context.
@@ -4846,7 +4858,7 @@ sub process {
 					$allowed = 1;
 				}
 			}
-			if ($level == 0 && $block =~ /^\s*\{/ && !$allowed) {
+			if ($chk_braces_single && $level == 0 && $block =~ /^\s*\{/ && !$allowed) {
 				my $herectx = $here . "\n";
 				my $cnt = statement_rawlines($block);
 
@@ -4856,6 +4868,19 @@ sub process {
 
 				WARN("BRACES",
 				     "braces {} are not necessary for single statement blocks\n" . $herectx);
+			}
+
+			## if enforcing braces for single statement blocks
+			if (!$chk_braces_single && $level == 0 && $block !~ /^\s*\{/ && !$allowed) {
+				my $herectx = $here . "\n";
+				my $cnt = statement_rawlines($block);
+
+				for (my $n = 0; $n < $cnt; $n++) {
+					$herectx .= raw_line($linenr, $n) . "\n";
+				}
+
+				WARN("BRACES",
+				     "braces {} are necessary even for single statement blocks\n" . $herectx);
 			}
 		}
 

@@ -2046,6 +2046,12 @@ sub check_absolute_file {
 	}
 }
 
+sub is_preprocessor_line {
+	my ($line) = @_;
+
+	return ($line =~ /^.\s*\#\s*(?:define|elif|else|endif|error|if|ifdef|ifndef|include|line|undef|warning)\b/);
+}
+
 sub trim {
 	my ($string) = @_;
 
@@ -3135,6 +3141,8 @@ sub process {
 
 # check we are in a valid C source file if not then ignore this hunk
 		next if ($realfile !~ /\.(h|c)$/);
+
+		my $is_prepro = is_preprocessor_line($line);
 
 # check indentation of any line with a bare else
 # (but not if it is a multiple line "if (foo) return bar; else return baz;")

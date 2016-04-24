@@ -52,6 +52,7 @@ my $ignore_perl_version = 0;
 my $minimum_perl_version = 5.10.0;
 my $min_conf_desc_length = 4;
 my $chk_utf8 = 1;
+my $chk_braces_single = 0;
 my $spelling_warn = 0;
 my $spelling_file = "$D/spelling.txt";
 my $codespell = 0;
@@ -113,6 +114,7 @@ Options:
   --ignore-perl-version      override checking of perl version.  expect
                              runtime errors.
   --no-utf8                  disable invalid UTF-8 check
+  --braces-single            warn about braces for single statement blocks
   --spelling                 Warn about typos and spelling problems
   --codespell                Use the codespell dictionary for spelling/typos
                              (default:/usr/share/codespell/dictionary.txt)
@@ -211,6 +213,7 @@ GetOptions(
 	'debug=s'	=> \%debug,
 	'test-only=s'	=> \$tst_only,
 	'utf8!'		=> \$chk_utf8,
+	'braces-single!' => \$chk_braces_single,
 	'spelling!'	=> \$spelling_warn,
 	'codespell!'	=> \$codespell,
 	'codespellfile=s'	=> \$codespellfile,

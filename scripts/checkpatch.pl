@@ -31,6 +31,7 @@ my $file = 0;
 my $check = 0;
 my $check_orig = 0;
 my $chk_braces_single = 0;
+my $chk_cxx = 0;
 my $summary = 1;
 my $mailback = 0;
 my $summary_file = 0;
@@ -74,6 +75,7 @@ Options:
   -f, --file                 treat FILE as regular source file
   --subjective, --strict     enable more subjective tests
   --braces-single            warn about braces for single statement blocks
+  --cxx                      check C++ files (EXPERIMENTAL)
   --types TYPE(,TYPE2...)    show only these comma separated message types
   --ignore TYPE(,TYPE2...)   ignore various comma separated message types
   --max-line-length=n        set the maximum line length, if exceeded, warn
@@ -151,6 +153,7 @@ GetOptions(
 	'subjective!'	=> \$check,
 	'strict!'	=> \$check,
 	'braces-single!' => \$chk_braces_single,
+	'cxx!'		=> \$chk_cxx,
 	'ignore=s'	=> \@ignore,
 	'types=s'	=> \@use,
 	'show-types!'	=> \$show_types,

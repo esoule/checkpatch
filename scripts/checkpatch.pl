@@ -4743,6 +4743,7 @@ sub process {
 				my $seen = 0;
 				my $herectx = $here . "\n";
 				my $ln = $linenr - 1;
+				my $sum_allowed = 0;
 				for my $chunk (@chunks) {
 					my ($cond, $block) = @{$chunk};
 
@@ -4779,10 +4780,11 @@ sub process {
 					$allow++;
 				}
 				if ($seen) {
-					my $sum_allowed = 0;
 					foreach (@allowed) {
 						$sum_allowed += $_;
 					}
+				}
+				if ($seen) {
 					if ($sum_allowed == 0) {
 						WARN("BRACES",
 						     "braces {} are not necessary for any arm of this statement\n" . $herectx);

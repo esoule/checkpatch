@@ -4021,6 +4021,10 @@ sub process {
 				} elsif ($opv eq '*_') {
 					#warn "'*' is part of type\n";
 
+				# No space before ~ in C++ for "Class::~Destructor"
+				} elsif ($op eq '~' && $ca =~ /::$/ && is_cxx_file($realfile, $chk_cxx)) {
+					# ~ used in destructor name
+
 				# unary operators should have a space before and
 				# none after.  May be left adjacent to another
 				# unary operator, or a cast

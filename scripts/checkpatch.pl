@@ -3837,6 +3837,9 @@ sub process {
 			# cpp #elif statement condition may start with a (
 			} elsif ($ctx =~ /^.\s*\#\s*elif\s*$/) {
 
+			# Ignore 'catch (...)' in C++
+			} elsif ($name =~ /^catch$/ && is_cxx_file($realfile, $chk_cxx)) {
+
 			# If this whole things ends with a type its most
 			# likely a typedef for a function.
 			} elsif ($ctx =~ /$Type$/) {

@@ -946,6 +946,16 @@ sub is_c_cxx_file($$) {
 	return ($realfile =~ /\.(h|c)$/);
 }
 
+sub is_cxx_file($$) {
+	my ($realfile, $chk_cxx) = @_;
+
+	## check we are in a valid C++ source file
+	if ($chk_cxx) {
+		return ($realfile =~ /\.(h|cc|cpp|cxx)$/);
+	}
+	return 0;
+}
+
 sub which {
 	my ($bin) = @_;
 
@@ -3373,7 +3383,8 @@ sub process {
 		}
 
 # no C99 // comments
-		if ($line =~ m{//}) {
+		if (!is_cxx_file($realfile, $chk_cxx) &&
+				$line =~ m{//}) {
 			if (ERROR("C99_COMMENTS",
 				  "do not use C99 // comments\n" . $herecurr) &&
 			    $fix) {

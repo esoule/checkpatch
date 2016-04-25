@@ -3861,7 +3861,7 @@ sub process {
 				\+=|-=|\*=|\/=|%=|\^=|\|=|&=|
 				=>|->|<<|>>|<|>|=|!|~|
 				&&|\|\||,|\^|\+\+|--|&|\||\+|-|\*|\/|%|
-				\?:|\?|:
+				\?:|\?|::|:
 			}x;
 			my @elements = split(/($ops|;)/, $opline);
 
@@ -3962,6 +3962,20 @@ sub process {
 				# No spaces for:
 				#   ->
 				} elsif ($op eq '->') {
+					if ($ctx =~ /Wx.|.xW/) {
+						if (ERROR("SPACING",
+							  "spaces prohibited around that '$op' $at\n" . $hereptr)) {
+							$good = rtrim($fix_elements[$n]) . trim($fix_elements[$n + 1]);
+							if (defined $fix_elements[$n + 2]) {
+								$fix_elements[$n + 2] =~ s/^\s+//;
+							}
+							$line_fixed = 1;
+						}
+					}
+
+				# No spaces for:
+				#   :: (scope resolution operator in C++)
+				} elsif ($op eq '::' && is_cxx_file($realfile, $chk_cxx)) {
 					if ($ctx =~ /Wx.|.xW/) {
 						if (ERROR("SPACING",
 							  "spaces prohibited around that '$op' $at\n" . $hereptr)) {

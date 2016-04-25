@@ -916,6 +916,36 @@ sub format_email {
 	return $formatted_email;
 }
 
+sub is_source_file_10($$) {
+	my ($realfile, $chk_cxx) = @_;
+
+	## check we are in a valid source file
+	if ($chk_cxx) {
+		return ($realfile =~ /\.(h|c|cc|cpp|cxx|s|S|pl|sh|dtsi|dts)$/);
+	}
+	return ($realfile =~ /\.(h|c|s|S|pl|sh|dtsi|dts)$/);
+}
+
+sub is_source_file_20($$) {
+	my ($realfile, $chk_cxx) = @_;
+
+	## check we are in a valid source file C/C++ or perl
+	if ($chk_cxx) {
+		return ($realfile =~ /\.(h|c|cc|cpp|cxx|pl|dtsi|dts)$/);
+	}
+	return ($realfile =~ /\.(h|c|pl|dtsi|dts)$/);
+}
+
+sub is_c_cxx_file($$) {
+	my ($realfile, $chk_cxx) = @_;
+
+	## check we are in a valid C/C++ source file
+	if ($chk_cxx) {
+		return ($realfile =~ /\.(h|c|cc|cpp|cxx)$/);
+	}
+	return ($realfile =~ /\.(h|c)$/);
+}
+
 sub which {
 	my ($bin) = @_;
 
@@ -2665,7 +2695,7 @@ sub process {
 		}
 
 # check we are in a valid source file if not then ignore this hunk
-		next if ($realfile !~ /\.(h|c|s|S|pl|sh|dtsi|dts)$/);
+		next if (!is_source_file_10($realfile, $chk_cxx));
 
 # line length limit (with some exclusions)
 #
@@ -2740,7 +2770,7 @@ sub process {
 		}
 
 # check we are in a valid source file C or perl if not then ignore this hunk
-		next if ($realfile !~ /\.(h|c|pl|dtsi|dts)$/);
+		next if (!is_source_file_20($realfile, $chk_cxx));
 
 # at the beginning of a line any tabs must come first and anything
 # more than 8 must use tabs.
@@ -2938,7 +2968,7 @@ sub process {
 		}
 
 # check we are in a valid C source file if not then ignore this hunk
-		next if ($realfile !~ /\.(h|c)$/);
+		next if (!is_c_cxx_file($realfile, $chk_cxx));
 
 		my $is_prepro = is_preprocessor_line($line);
 

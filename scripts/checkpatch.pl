@@ -344,6 +344,8 @@ our $Operators	= qr{
 
 our $c90_Keywords = qr{do|for|while|if|else|return|goto|continue|switch|default|case|break}x;
 
+our $CxxWordOperators = qr{new|delete|delete\[\]}x;
+
 our $BasicType;
 our $NonptrType;
 our $NonptrTypeMisordered;
@@ -2932,6 +2934,9 @@ sub process {
 		     $prevline =~ /^\+\s+$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
 			# known declaration macros
 		     $prevline =~ /^\+\s+$declaration_macros/) &&
+			# for C++ "delete $Ident" which can look like "$Ident $Ident"
+		    !(is_cxx_file($realfile, $chk_cxx) &&
+		      $prevline =~ /^\+\s+$CxxWordOperators\s+$Ident\s*[=,;\[]/) &&
 			# for "else if" which can look like "$Ident $Ident"
 		    !($prevline =~ /^\+\s+$c90_Keywords\b/ ||
 			# other possible extensions of declaration lines

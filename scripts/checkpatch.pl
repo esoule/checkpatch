@@ -5210,7 +5210,7 @@ sub process {
 
 # warn about #if 0
 		if ($line =~ /^.\s*\#\s*if\s+0\b/) {
-			CHK("REDUNDANT_CODE",
+			WARN("REDUNDANT_CODE",
 			    "if this code is redundant consider removing it\n" .
 				$herecurr);
 		}

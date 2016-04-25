@@ -4288,8 +4288,17 @@ sub process {
 			}
 		}
 
+#check for false positives that look like labels in C++
+		my $cxx_not_label = 0;
+		if (is_cxx_file($realfile, $chk_cxx)) {
+			if ($line =~ /^.\s+(?:private|protected|public):/) {
+				$cxx_not_label = 1;
+			}
+		}
+
 #goto labels aren't indented, allow a single space however
-		if ($line=~/^.\s+[A-Za-z\d_]+:(?![0-9]+)/ and
+		if (!$cxx_not_label &&
+		   $line=~/^.\s+[A-Za-z\d_]+:(?![0-9:]+)/ and
 		   !($line=~/^. [A-Za-z\d_]+:/) and !($line=~/^.\s+default:/)) {
 			if (WARN("INDENTED_LABEL",
 				 "labels should not be indented\n" . $herecurr) &&

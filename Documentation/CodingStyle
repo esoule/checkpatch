@@ -17,7 +17,7 @@ and NOT read it.  Burn them, it's a great symbolic gesture.
 >>>>
 >>>>	Modifications are marked with ">>>>" marks on the left margin.
 >>>>
->>>>	Updated: 2016-04-16 19:15.
+>>>>	Updated: 2016-09-23 20:40.
 >>>>
 
 Anyway, here goes:
@@ -966,7 +966,8 @@ and return NULL if that occurred.
 >>>>	Know your C and C++ library well and use its functions
 >>>>	appropriately.
 >>>>
->>>>	Do not unnecessarily use memory allocation where you can
+>>>>	In the kernel and kernel modules (but not in userspace),
+>>>>	do not unnecessarily use memory allocation where you can
 >>>>	just place a static struct variable and call a function that
 >>>>	"registers" the variable by inserting it into some linked
 >>>>	list or some tree. Kernel has many examples that resemble
@@ -993,6 +994,10 @@ and return NULL if that occurred.
 >>>>			foo_register(&my_foo);
 >>>>			[...]
 >>>>		}
+>>>>
+>>>>	Do not use the above pattern in userspace, especially in
+>>>>	shared libraries, as it breaks binary compatibility (ABI
+>>>>	compatibility) between newer library and older application.
 >>>>
 
 

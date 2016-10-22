@@ -11,6 +11,18 @@ at least consider the points made here.
 First off, I'd suggest printing out a copy of the GNU coding standards,
 and NOT read it.  Burn them, it's a great symbolic gesture.
 
+>
+> _Our note:_
+>
+> This document has been modified to match expectations of our
+> code reviewers in various software projects (later
+> "reviewers").
+>
+> Modifications are marked with ">" marks on the left margin.
+>
+> Updated: 2016-09-23 20:40.
+>
+
 Anyway, here goes:
 
 
@@ -36,6 +48,27 @@ your program.
 In short, 8-char indents make things easier to read, and have the added
 benefit of warning you when you're nesting your functions too deep.
 Heed that warning.
+
+>
+> _Our note:_
+>
+> *  (a) Reviewers understand that developers may be working with
+>        legacy code with very long lines and more than 3 levels of
+>        indentation.
+>
+> *  (b) Developers are free to configure their editor to make tab
+>        width of 4 characters instead of 8, if this helps them
+>        working with such legacy code.
+>
+> *  (c ) However, reviewers are free to review developers' code
+>        with the editor configured with tab width and
+>        indentations of 8 characters.
+>
+> *  (d) Reviewers are free to ask developers to reformat their
+>        _new_ code to fit 80 columns, fix mixing of tabs and
+>        space indentations, and reduce the number of levels of
+>        indentation.
+>
 
 The preferred way to ease multiple indentation levels in a switch statement is
 to align the "switch" and its subordinate "case" labels in the same column
@@ -76,6 +109,16 @@ used for indentation, and the above example is deliberately broken.
 
 Get a decent editor and don't leave whitespace at the end of lines.
 
+>
+> _Our note:_
+>
+> TIP: Before submitting your changes for review, check for
+> trailing whitespace and wrong indentation (mix of tabs and
+> spaces), with the command
+>
+> `git diff --check FIRST_COMMIT LAST_COMMIT`
+>
+
 
 Chapter 2: Breaking long lines and strings
 --------------------------------------------
@@ -92,6 +135,16 @@ information. Descendants are always substantially shorter than the parent and
 are placed substantially to the right. The same applies to function headers
 with a long argument list. However, never break user-visible strings such as
 printk messages, because that breaks the ability to grep for them.
+
+>
+> _Our note:_
+>
+> Reviewers are free to ask developers to make their _new_ code
+> fit 80 columns, where appropriate.
+>
+> Remember: never break user-visible strings such as printk /
+> printf messages.
+>
 
 
 Chapter 3: Placing Braces and Spaces
@@ -199,6 +252,37 @@ statement; in the latter case use braces in both branches:
 	}
 ```
 
+>
+> _Our note:_
+>
+> NOTE: Our reviewers ask developers to _always_ use braces, for
+> both "if" and "else" branches and for "for" and "while" loops.
+>
+>```
+>		if (condition) {
+>			do_this();
+>		} else {
+>			do_that();
+>		}
+>
+>		for (ix = 0; ix < 10; ix++) {
+>			do_something_with(a[ix], jx);
+>		}
+>```
+>
+> This eases maintenance of old and unreadable legacy code with
+> complicated nesting.
+>
+> This also makes it easier to spot or avoid mistakes when a
+> line is commented out or a comment is inserted between the
+> "if" or "else" keyword and the statement after it.
+>
+> By the way, Perl language requires braces ("{}"), for both
+> "if" and "else" branches and for "for" and "while" loops.
+> Rust language has similar requirements for "if" statements.
+>
+
+
 3.1:  Spaces
 --------------
 
@@ -265,6 +349,32 @@ no space after the prefix increment & decrement unary operators:
 
 and no space around the '.' and "->" structure member operators.
 
+>
+> _Our note:_
+>
+> NOTE: Use checkpatch.pl script to check your patch or source
+> file for spacing errors, _before_ submitting your code for
+> review.
+>
+> Reviewers are free to ask developers to fix inconsistent
+> placement of spaces or other punctuation signs, if they see
+> it within the same set of changes:
+>
+>```
+>		/*
+>		  * This   example is bad   ,looks  sloppy.
+>		* Don't   write like this!
+>		 */
+>		if(x) {
+>			do_this(a, b);
+>		}
+>
+>		if (   y){
+>			do_something_else (b  ,  a  );
+>		}
+>```
+>
+
 Do not leave trailing whitespace at the ends of lines.  Some editors with
 "smart" indentation will insert whitespace at the beginning of new lines as
 appropriate, so you can start typing the next line of code right away.
@@ -276,6 +386,16 @@ Git will warn you about patches that introduce trailing whitespace, and can
 optionally strip the trailing whitespace for you; however, if applying a series
 of patches, this may make later patches in the series fail by changing their
 context lines.
+
+>
+> _Our note:_
+>
+> TIP: Before submitting your changes for review, check for
+> trailing whitespace and wrong indentation (mix of tabs and
+> spaces), with the command
+>
+> `git diff --check FIRST_COMMIT LAST_COMMIT`
+>
 
 
 Chapter 4: Naming
@@ -301,11 +421,37 @@ notation) is brain damaged - the compiler knows the types anyway and can
 check those, and it only confuses the programmer.  No wonder MicroSoft
 makes buggy programs.
 
+>
+> _Our note:_
+>
+> NOTE: Reviewers ask developers to include _measurement_
+> _units_ into variable names, function argument names and
+> structure member names, when the type does not make the
+> measurement unit obvious to the reader.
+>
+>```
+>		long period_msec = 100;
+>		unsigned long radius_mm = 140;
+>
+>		long timeout = 5;  /* CONFUSING: 5 seconds? 5 microseconds? 5 ticks? */
+>```
+>
+
 LOCAL variable names should be short, and to the point.  If you have
 some random integer loop counter, it should probably be called "i".
 Calling it "loop_counter" is non-productive, if there is no chance of it
 being mis-understood.  Similarly, "tmp" can be just about any type of
 variable that is used to hold a temporary value.
+
+>
+> _Our note:_
+>
+> TIP: "ii", "jj", "kk", or even "ix", "jx", "kx" are even
+> better loop counter names, because it is easier to search
+> for them than searching for "i". Also, this makes it easier
+> to spot a mistake where the same variable "i" is used for
+> both outer and inner loop.
+>
 
 If you are afraid to mix up your local variable names, you have another
 problem, which is called the function-growth-hormone-imbalance syndrome.
@@ -391,6 +537,26 @@ EVER use a typedef unless you can clearly match one of those rules.
 
 In general, a pointer, or a struct that has elements that can reasonably
 be directly accessed should _never_ be a typedef.
+
+>
+> _Our note:_
+>
+> NOTE: Reviewers understand that developers have legacy code
+> to maintain. However, reviewers are free to challenge
+> developers whether typedefs are necessary for new code.
+>
+> NOTE: When working with fixed-width types, please use the
+> standard C99 types (uint32_t, uint16_t, ...) in new code,
+> for both kernel and userspace.
+>
+> This makes it easier to share code between the kernel and
+> userspace (for example, a library built as userspace library
+> and a kernel module).
+>
+> To get uint32_t and other C99 types: include `<stdint.h>`
+> (userspace), or `<linux/types.h>` (in kernel and kernel
+> modules).
+>
 
 
 Chapter 6: Functions
@@ -497,6 +663,19 @@ A common type of bug to be aware of is "one err bugs" which look like this:
 The bug in this code is that on some exit paths "foo" is NULL.  Normally the
 fix for this is to split it up into two error labels "err_bar:" and "err_foo:".
 
+>
+> _Our note:_
+>
+> NOTE: In kernel and kernel modules, "goto" is a very common
+> and useful pattern for driver initialization and cleanup.
+>
+> Please learn to use it in the kernel and kernel modules,
+> according to the rules above.
+>
+> In userspace, use "goto" only if you can prove that it
+> improves the readability of your code.
+>
+
 
 Chapter 8: Commenting
 -----------------------
@@ -515,12 +694,30 @@ ugly), but try to avoid excess.  Instead, put the comments at the head
 of the function, telling people what it does, and possibly WHY it does
 it.
 
+>
+> _Our note:_
+>
+> NOTE: the above advice is controversial, but kernel
+> developers expect you to follow it.
+>
+
 When commenting the kernel API functions, please use the kernel-doc format.
 See the files Documentation/kernel-doc-nano-HOWTO.txt and scripts/kernel-doc
 for details.
 
 Linux style for comments is the C89 ` "/* ... */" ` style.
 Don't use C99-style ` "// ..." ` comments.
+
+>
+> _Our note:_
+>
+> NOTE: the above applies to kernel and kernel modules, and
+> code shared with the kernel (e.g. a library built as kernel
+> module and a userspace library).
+>
+> In userspace, you may use both the C89 ` "/* ... */" ` style and
+> C99-style ` "// ..." ` comments.
+>
 
 The preferred style for long (multi-line) comments is:
 
@@ -546,6 +743,16 @@ comments is a little different.
 	 * but there is no initial almost-blank line.
 	 */
 ```
+
+>
+> _Our note:_
+>
+> NOTE: the comment rule for files in net/ and drivers/net/ (shown
+> _above_) applies to the in-tree kernel code.
+>
+> For out-of-tree networking code (e.g. kernel modules), you
+> are free to use the general comment style shown _above_ it.
+>
 
 It's also important to comment data, whether they are basic types or derived
 types.  To this end, use just one data declaration per line (no commas for
@@ -616,6 +823,18 @@ options "-kr -i8" (stands for "K&R, 8 character indents"), or use
 re-formatting you may want to take a look at the man page.  But
 remember: "indent" is not a fix for bad programming.
 
+>
+> _Our note:_
+>
+> NOTE: Remember that "indent" does not re-format code
+> perfectly. For example, "indent" may wrap long lines at '.'
+> and "->" structure member operators, or between the word
+> "struct" and the name of the structure.
+>
+> Please do not submit code re-formatted with indent, if you
+> see these or similar defects.
+>
+
 
 Chapter 10: Kconfig configuration files
 -----------------------------------------
@@ -652,6 +871,16 @@ Documentation/kbuild/kconfig-language.txt.
 
 Chapter 11: Data structures
 -----------------------------
+
+>
+> _Our note:_
+>
+> NOTE: locking and reference counting patterns described
+> below are for kernel and kernel modules. Userspace has its
+> own patterns and libraries for locking and reference
+> counting. Know your C and C++ library well and use its
+> functions and locking primitives appropriately.
+>
 
 Data structures that have visibility outside the single-threaded
 environment they are created and destroyed in should always have
@@ -762,6 +991,16 @@ to collide with an existing variable.
 The cpp manual deals with macros exhaustively. The gcc internals manual also
 covers RTL which is used frequently with assembly language in the kernel.
 
+>
+> _Our note:_
+>
+> NOTE: macros _must_ be subject to _peer_ _review_,
+> because mistakes in them are way too common.
+>
+> Generally, inline functions are preferable to macros
+> resembling functions.
+>
+
 
 Chapter 13: Printing kernel messages
 --------------------------------------
@@ -770,6 +1009,16 @@ Kernel developers like to be seen as literate. Do mind the spelling
 of kernel messages to make a good impression. Do not use crippled
 words like "dont"; use "do not" or "don't" instead.  Make the messages
 concise, clear, and unambiguous.
+
+>
+> _Our note:_
+>
+> Product developers in general like to be seen as literate.
+> Pay attention to the spelling and punctuation in any
+> user-visible strings. They include printf(), web forms
+> and comments in software configuration files or other
+> files shipped to the users.
+>
 
 Kernel messages do not have to be terminated with a period.
 
@@ -796,6 +1045,15 @@ corresponding Makefile; in other cases specific files #define DEBUG.  And
 when a debug message should be unconditionally printed, such as if it is
 already inside a debug-related #ifdef section, `printk(KERN_DEBUG ...)` can be
 used.
+
+>
+> _Our note:_
+>
+> NOTE: printk, pr_debug and dynamic debug functionality is
+> available only in kernel and kernel modules. Userspace
+> libraries and programs have their own debug message
+> facilities (example: syslog).
+>
 
 
 Chapter 14: Allocating memory
@@ -835,6 +1093,56 @@ The preferred form for allocating a zeroed array is the following:
 Both forms check for overflow on the allocation size n * sizeof(...),
 and return NULL if that occurred.
 
+>
+> _Our note:_
+>
+> NOTE: in userspace, use your C library to allocate memory,
+> via malloc(), calloc(), realloc(). If you use OpenBSD, use
+> reallocarray() function, which checks for overflow on the
+> allocation size n * sizeof(...).
+>
+> In C++ language, please use "new" and "delete" operators
+> instead of malloc() and free() functions.
+>
+> Know your C and C++ library well and use its functions
+> appropriately.
+>
+> In the kernel and kernel modules (but not in userspace),
+> do not unnecessarily use memory allocation where you can
+> just place a static struct variable and call a function that
+> "registers" the variable by inserting it into some linked
+> list or some tree. Kernel has many examples that resemble
+> something like this:
+>
+>```
+>		/* linux/foo.h */
+>
+>		struct foo {
+>			struct list_head f_list;	/* List glue */
+>			const char *name;		/* Name of foo */
+>			int num;			/* Number of foo */
+>		};
+>
+>		/* mymodule.c */
+>
+>		static struct foo my_foo = {
+>			.name = "My Foo",
+>			.num = 100
+>		};
+>
+>		static int __init mymodule_init(void)
+>		{
+>			[...]
+>			foo_register(&my_foo);
+>			[...]
+>		}
+>```
+>
+> Do not use the above pattern in userspace, especially in
+> shared libraries, as it breaks binary compatibility (ABI
+> compatibility) between newer library and older application.
+>
+
 
 Chapter 15: The inline disease
 --------------------------------
@@ -863,9 +1171,31 @@ help, and the maintenance issue of removing the inline when a second user
 appears outweighs the potential value of the hint that tells gcc to do
 something it would have done anyway.
 
+>
+> _Our note:_
+>
+> NOTE: "inline" keywords are not needed in 99% of cases.
+> Use normal static or global functions instead of inline
+> functions. If you use an "inline" keyword, reviewers will
+> ask you to provide a numerical _proof_ that this
+> _significantly_ speeds up the execution of your program.
+>
+
 
 Chapter 16: Function return values and names
 ----------------------------------------------
+
+>
+> _Our note:_
+>
+> NOTE: this chapter lists kernel conventions.
+>
+> In userspace, the conventions of your C and C++ library and
+> conventions of your project apply instead.
+>
+> Know your C and C++ library well and design API for your
+> project well.
+>
 
 Functions can return values of many different kinds, and one of the
 most common is a value indicating whether the function succeeded or
@@ -888,6 +1218,21 @@ for success or -EBUSY for failure.  In the same way, "PCI device present" is
 a predicate, and the pci_dev_present() function returns 1 if it succeeds in
 finding a matching device or 0 if it doesn't.
 
+>
+> _Our note:_
+>
+> In userspace, the conventions of your C and C++ library and
+> conventions of your project apply instead. They must be
+> applied in a consistent manner.
+>
+> For instance, a C function "add_work" could return 0 for
+> success and -1 for failure (with setting "errno" to
+> appropriate value), if you use the C library conventions.
+>
+> In C++, please use the exceptions mechanism where
+> appropriate.
+>
+
 All EXPORTed functions must respect this convention, and so should all
 public functions.  Private (static) functions need not, but it is
 recommended that they do.
@@ -897,6 +1242,20 @@ than an indication of whether the computation succeeded, are not subject to
 this rule.  Generally they indicate failure by returning some out-of-range
 result.  Typical examples would be functions that return pointers; they use
 NULL or the ERR_PTR mechanism to report failure.
+
+>
+> _Our note:_
+>
+> NOTE: In userspace C, in functions that return pointers, it
+> is customary to return NULL (with setting "errno" to
+> appropriate value).
+>
+> Special pointers and ERR_PTR are normally not used in
+> userspace libraries and programs.
+>
+> In C++, please use the exceptions mechanism where
+> appropriate.
+>
 
 
 Chapter 17:  Don't re-invent the kernel macros
@@ -920,6 +1279,28 @@ Similarly, if you need to calculate the size of some structure member, use
 There are also min() and max() macros that do strict type checking if you
 need them.  Feel free to peruse that header file to see what else is already
 defined that you shouldn't reproduce in your code.
+
+>
+> _Our note:_
+>
+> NOTE: Don't re-invent the wheel. Know your C and C++ library
+> well and use its functions and macros appropriately.
+>
+> Note that some of the C library functions are _deprecated_,
+> do not have _context_ parameter (in other words, are not
+> thread-aware) or are outright dangerous to use. This is
+> usually mentioned in their manual pages.
+>
+> To refresh your memory, look into manual pages for a
+> particular function or header file, for example:
+>
+>		man 3p printf
+>		man strtok_r
+>		man stdio.h
+>		man unistd.h
+>		man stdlib.h
+>		man stdint.h
+>
 
 
 Chapter 18:  Editor modelines and other cruft
@@ -1036,6 +1417,15 @@ expression used.  For instance:
 	#endif /* CONFIG_SOMETHING */
 ```
 
+>
+> _Our note:_
+>
+> NOTE: Reviewers ask developers to place a comment after
+> the #endif on the same line, for any number of lines in the
+> block (even one line). Unfortunately, it is too common that
+> the block grows as more code is added.
+>
+
 
 Appendix I: References
 ------------------------
@@ -1058,3 +1448,171 @@ Appendix I: References
 
 *  Kernel CodingStyle, by greg@kroah.com at OLS 2002:    
    http://www.kroah.com/linux/talks/ols_2002_kernel_codingstyle_talk/html/
+
+
+Appendix II: Lists and Keeping Them In Order
+----------------------------------------------
+
+>
+> _Our note:_
+>
+> This appendix has been added by us.
+>
+
+There are many _lists_ in projects. For example, a list of
+source code files in makefiles, a list of build flags in
+makefiles.
+
+Lists of source code files and list of build flags in
+makefiles are sorted _alphabetically_ in most cases.
+
+```
+	foo-objs := bar.o bear.o foo.o
+```
+
+If a list is likely to grow with time, it is a good idea to
+put one item per line right away:
+
+```
+	DEFINES +=	\
+		-DBAR	\
+		-DBEAR	\
+		-DFOO
+```
+
+When adding new items to an existing list, you MUST keep the
+list sorted in the same way it was sorted before.
+There may be a comment at the start of a list telling you
+how that list is sorted.
+
+There are exceptions to the alphabetical sorting rule.
+For instance, a list of libraries for linking the program
+(LDLIBS, LDFLAGS, ...) is determined by build and runtime
+dependencies between these libraries, not by alphabetical
+sorting of library names.
+
+
+Appendix III: Compiler Warnings
+---------------------------------
+
+>
+> _Our note:_
+>
+> This appendix has been added by us.
+>
+
+At the minimum, your new code must not trigger new compiler
+warnings, and that under all build configurations of the
+software project.
+
+At the maximum, you must fix existing warnings in files that
+you modified.
+
+However, _avoid_ using casts when fixing compiler warnings:
+they frequently just hide the problem instead of fixing it.
+A better approach here is to ask questions to a more
+experienced developer.
+
+
+Appendix IV: Ifdefs
+---------------------
+
+>
+> _Our note:_
+>
+> This appendix has been added by us.
+>
+
+The use of ifdefs is discouraged in new code. Please read
+"Chapter 20: Conditional Compilation" above on avoiding
+them. No-op stub functions provided for the "#else" case
+in headers and having multiple .c files that are either
+compiled or not compiled are better alternatives to ifdefs.
+
+If you maintain legacy code and have to modify ifdefs, make
+sure that you follow rules below.
+
+*  (a) number of opening and closing braces ("{}") must match,
+       and nesting must be respected.
+
+*  (b) cover entire functions with ifdefs, avoid covering parts
+       of functions.
+
+*  (c ) do not insert ifdefs anywhere between function return
+       type, function name, or argument list (see bad examples
+       below).
+
+*  (d) if you want to re-use one function body but provide
+       different return types and argument lists based on an ifdef,
+       place the function body into one common function and provide
+       small adapter or wrapper functions that call the common
+       function and take care of argument list or return type
+       differences.
+
+Reviewers are free to ask developers to rewrite new or
+changed code that does not follow rules above or has other
+problems.
+
+Below is an _incomplete_ list of ifdef anti-pattern examples:
+
+Bad example 1:
+
+```
+	/*
+	 * WRONG AND CONFUSING: number of opening
+	 * and closing braces does not match,
+	 * this confuses IDEs and pretty printers
+	 */
+
+	#ifdef CONFIG_SOMETHING
+	int my_func_1(int x, int y, int z) {		/* opening brace A */
+	#else /* (!CONFIG_SOMETHING) */
+	int my_func_1(double x, double y, int z) {	/* opening brace B */
+	#endif /* (!CONFIG_SOMETHING) */
+		/* VERY LONG function body here */
+		/* VERY LONG function body here */
+		return (int) (x * x);
+	}						/* closing brace B */
+```
+
+Bad example 2:
+
+```
+	/*
+	 * WRONG AND CONFUSING: ifdef breaks function argument list,
+	 * this confuses IDEs and pretty printers
+	 */
+
+	int my_func_2(
+	#ifdef CONFIG_SOMETHING
+		int x, int y
+	#else /* (!CONFIG_SOMETHING) */
+		double x, double y
+	#endif /* (!CONFIG_SOMETHING) */
+		, int z)
+	{
+		/* VERY LONG function body here */
+		/* VERY LONG function body here */
+		return (int) (x * x);
+	}
+```
+
+Bad example 3:
+
+```
+	/*
+	 * WRONG AND CONFUSING: ifdef repeats function name twice,
+	 * this confuses IDEs and pretty printers
+	 */
+
+	#ifdef CONFIG_SOMETHING
+	int my_func_1(int x, int y, int z)
+	#else /* (!CONFIG_SOMETHING) */
+	int my_func_1(double x, double y, int z)
+	#endif /* (!CONFIG_SOMETHING) */
+	{						/* opening brace A */
+		/* VERY LONG function body here */
+		/* VERY LONG function body here */
+		return (int) (x * x);
+	}						/* closing brace A */
+```

@@ -5981,7 +5981,7 @@ sub process {
 		}
 
 # whine about ACCESS_ONCE
-		if ($^V && $^V ge 5.10.0 &&
+		if (0 && $^V && $^V ge 5.10.0 &&
 		    $line =~ /\bACCESS_ONCE\s*$balanced_parens\s*(=(?!=))?\s*($FuncArg)?/) {
 			my $par = $1;
 			my $eq = $2;

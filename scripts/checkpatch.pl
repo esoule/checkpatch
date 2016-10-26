@@ -22,7 +22,6 @@ my $quiet = 0;
 my $tree = 0;
 my $chk_signoff = 1;
 my $chk_patch = 1;
-my $chk_utf8 = 1;
 my $tst_only;
 my $emacs = 0;
 my $terse = 0;
@@ -30,8 +29,6 @@ my $showfile = 0;
 my $file = 0;
 my $check = 0;
 my $check_orig = 0;
-my $chk_braces_single = 0;
-my $chk_cxx = 0;
 my $summary = 1;
 my $mailback = 0;
 my $summary_file = 0;
@@ -51,6 +48,9 @@ my $max_line_length = 80;
 my $ignore_perl_version = 0;
 my $minimum_perl_version = 5.10.0;
 my $min_conf_desc_length = 4;
+my $chk_utf8 = 1;
+my $chk_braces_single = 0;
+my $chk_cxx = 0;
 my $spelling_warn = 0;
 my $spelling_file = "$D/spelling.txt";
 my $codespell = 0;
@@ -74,8 +74,6 @@ Options:
   --showfile                 emit diffed file position, not input file position
   -f, --file                 treat FILE as regular source file
   --subjective, --strict     enable more subjective tests
-  --braces-single            warn about braces for single statement blocks
-  --cxx                      check C++ files (EXPERIMENTAL)
   --types TYPE(,TYPE2...)    show only these comma separated message types
   --ignore TYPE(,TYPE2...)   ignore various comma separated message types
   --max-line-length=n        set the maximum line length, if exceeded, warn
@@ -83,7 +81,6 @@ Options:
   --show-types               show the message "types" in the output
   --root=PATH                PATH to the kernel tree root
   --no-summary               suppress the per-file summary
-  --no-utf8                  disable invalid UTF-8 check
   --mailback                 only produce a report in case of warnings/errors
   --summary-file             include the filename in summary
   --debug KEY=[0|1]          turn on/off debugging of KEY, where KEY is one of
@@ -101,6 +98,9 @@ Options:
                              file.  It's your fault if there's no backup or git
   --ignore-perl-version      override checking of perl version.  expect
                              runtime errors.
+  --no-utf8                  disable invalid UTF-8 check
+  --braces-single            warn about braces for single statement blocks
+  --cxx                      check C++ files (EXPERIMENTAL)
   --spelling                 Warn about typos and spelling problems
   --codespell                Use the codespell dictionary for spelling/typos
                              (default:/usr/share/codespell/dictionary.txt)
@@ -144,7 +144,6 @@ GetOptions(
 	'q|quiet+'	=> \$quiet,
 	'tree!'		=> \$tree,
 	'signoff!'	=> \$chk_signoff,
-	'utf8!'		=> \$chk_utf8,
 	'patch!'	=> \$chk_patch,
 	'emacs!'	=> \$emacs,
 	'terse!'	=> \$terse,
@@ -152,8 +151,6 @@ GetOptions(
 	'f|file!'	=> \$file,
 	'subjective!'	=> \$check,
 	'strict!'	=> \$check,
-	'braces-single!' => \$chk_braces_single,
-	'cxx!'		=> \$chk_cxx,
 	'ignore=s'	=> \@ignore,
 	'types=s'	=> \@use,
 	'show-types!'	=> \$show_types,
@@ -168,6 +165,9 @@ GetOptions(
 	'ignore-perl-version!' => \$ignore_perl_version,
 	'debug=s'	=> \%debug,
 	'test-only=s'	=> \$tst_only,
+	'utf8!'		=> \$chk_utf8,
+	'braces-single!' => \$chk_braces_single,
+	'cxx!'		=> \$chk_cxx,
 	'spelling!'	=> \$spelling_warn,
 	'codespell!'	=> \$codespell,
 	'codespellfile=s'	=> \$codespellfile,

@@ -34,7 +34,7 @@ my $check_orig = 0;
 my $summary = 1;
 my $mailback = 0;
 my $summary_file = 0;
-my $show_types = 0;
+my $show_types = 1;
 my $list_types = 0;
 my $fix = 0;
 my $fix_inplace = 0;
@@ -88,7 +88,7 @@ Options:
   --list-types               list the possible message types
   --types TYPE(,TYPE2...)    show only these comma separated message types
   --ignore TYPE(,TYPE2...)   ignore various comma separated message types
-  --show-types               show the specific message type in the output
+  --no-show-types            do not show message types in the output
   --max-line-length=n        set the maximum line length, if exceeded, warn
   --min-conf-desc-length=n   set the min description length, if shorter, warn
   --root=PATH                PATH to the kernel tree root

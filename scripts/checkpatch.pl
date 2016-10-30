@@ -20,7 +20,7 @@ use Getopt::Long qw(:config no_auto_abbrev);
 
 my $quiet = 0;
 my $tree = 0;
-my $chk_signoff = 1;
+my $chk_signoff = 0;
 my $chk_patch = 1;
 my $tst_only;
 my $emacs = 0;
@@ -71,7 +71,7 @@ Version: $V
 Options:
   -q, --quiet                quiet
   --tree                     run with a kernel tree
-  --no-signoff               do not check for 'Signed-off-by' line
+  --signoff                  check for 'Signed-off-by' line
   --patch                    treat FILE as patchfile (default)
   --emacs                    emacs compile window format
   --terse                    one line per report

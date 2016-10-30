@@ -54,6 +54,7 @@ my $min_conf_desc_length = 4;
 my $chk_utf8 = 1;
 my $chk_braces_single = 0;
 my $chk_cxx = 0;
+my $chk_maintainers = 0;
 my $spelling_warn = 0;
 my $spelling_file = "$D/spelling.txt";
 my $codespell = 0;
@@ -2578,6 +2579,7 @@ sub process {
 
 # Check for added, moved or deleted files
 		if (!$reported_maintainer_file && !$in_commit_log &&
+		    $chk_maintainers &&
 		    ($line =~ /^(?:new|deleted) file mode\s*\d+\s*$/ ||
 		     $line =~ /^rename (?:from|to) [\w\/\.\-]+\s*$/ ||
 		     ($line =~ /\{\s*([\w\/\.\-]*)\s*\=\>\s*([\w\/\.\-]*)\s*\}/ &&

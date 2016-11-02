@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed.
+# Called by "git commit" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message if
+# it wants to stop the commit.
+#
+# To enable this hook, copy it to ".git/hooks/pre-commit".
+
+SCRIPT_TO_RUN=""
+
+find_script_to_run()
+{
+	local file_10="./scripts/git-hooks/pre-commit-check.sh"
+	local file_20="./.git/hooks/pre-commit-fallback-101.sh"
+	local file_list=" ${file_10} ${file_20}"
+
+	for sh_file in ${file_list} ; do
+		if [ -x "${sh_file}" ] && [ -f "${sh_file}" ] ; then
+			SCRIPT_TO_RUN="${sh_file}"
+			return 0
+		fi
+	done
+
+	return 0
+}
+
+find_script_to_run
+
+if [ -n "${SCRIPT_TO_RUN}" ] ; then
+	exec "${SCRIPT_TO_RUN}" "$@"
+	## not reached - after exec
+	echo "ERROR: pre-commit script ${SCRIPT_TO_RUN} failed"    >&2
+	exit 1
+fi
+
+true

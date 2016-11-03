@@ -6264,6 +6264,14 @@ EOM
 	}
 
 	if ($quiet == 0) {
+		if ($clean != 1) {
+			print << "EOM";
+
+NOTE: This patch style checker is only a guide, not a replacement for
+      human judgment. Take its advice with a grain of salt.
+EOM
+		}
+
 		print "\n";
 		if ($clean == 1) {
 			print "$vname has no obvious style problems and is ready for submission.\n";

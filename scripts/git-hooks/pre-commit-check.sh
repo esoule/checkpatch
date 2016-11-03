@@ -5,7 +5,16 @@
 # exit with non-zero status after issuing an appropriate message if
 # it wants to stop the commit.
 #
-# To enable this hook, rename this file to "pre-commit".
+# To enable this hook, call this script from ".git/hooks/pre-commit".
+
+PROGNAME="$(basename "$0")"
+SETCOLOR_FAILURE=""
+SETCOLOR_NORMAL=""
+if [ -t 1 ] ; then
+	# Output is going to a terminal
+	SETCOLOR_FAILURE="$(echo -n -e "\e[0;31;01m")"
+	SETCOLOR_NORMAL="$(echo -n -e "\e[0;39;49m\e[0;39m")"
+fi
 
 if git rev-parse --verify HEAD >/dev/null 2>&1
 then
@@ -45,5 +54,69 @@ EOF
 	exit 1
 fi
 
-# If there are whitespace errors, print the offending file names and fail.
-exec git --no-pager diff-index --check --cached $against --
+error_from_script=""
+
+mark_problems_reported_by()
+{
+	error_from_script="${error_from_script}, \"${1:-}\""
+	echo ""
+	return 0
+}
+
+# Check for whitespace errors
+git --no-pager diff-index --check --cached $against --
+
+if [ $? -ne 0 ] ; then
+	mark_problems_reported_by 'git diff --check --cached'
+fi
+
+git --no-pager diff -M --cached $against -- |    \
+	./scripts/checkpatch.pl --show-types --quiet    \
+		--spelling --max-line-length=96 /dev/stdin
+
+if [ $? -ne 0 ] ; then
+	mark_problems_reported_by './scripts/checkpatch.pl'
+fi
+
+show_check_info_message_10()
+{
+	cat <<EOF
+NOTE:
+*   This commit style checker is only a guide, not a replacement for
+    human judgment. Take its advice with a grain of salt.
+*   If any of the errors are false positives, you may bypass the check
+    with "git commit --no-verify". Use this trick sparingly :-)
+
+EOF
+	return 0
+}
+
+show_check_error_message()
+{
+	cat <<EOF
+ERROR: This commit has style problems.
+ERROR: Please review and fix reported problems _before_ making the commit.
+
+EOF
+	return 0
+}
+
+show_check_info_message_20()
+{
+	return 0
+}
+
+if [ -n "${error_from_script}" ] ; then
+	error_from_script=$(echo -n ${error_from_script} | sed -e 's/^,[ ]*//;')
+
+	show_check_info_message_10
+
+	show_check_error_message    \
+		| sed -e "s/\$/${SETCOLOR_NORMAL}/; s/^/${SETCOLOR_FAILURE}/; "
+
+	show_check_info_message_20
+
+	exit 1
+fi
+
+exit 0

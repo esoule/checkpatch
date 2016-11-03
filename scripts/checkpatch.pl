@@ -2129,6 +2129,8 @@ sub process {
 	our $clean = 1;
 	my $signoff = 0;
 	my $is_patch = 0;
+	my $is_git_diff = 0;
+	my $is_git_diff_rename = 0;
 	my $in_header_lines = $file ? 0 : 1;
 	my $in_commit_log = 0;		#Scanning lines before patch
 	my $has_commit_log = 0;		#Encountered lines before patch
@@ -2306,6 +2308,17 @@ sub process {
 
 		} elsif ($realcnt == 1) {
 			$realcnt--;
+		}
+
+		if ($is_git_diff &&
+		    ($line =~ /^(?:new|deleted) file mode\s*\d+\s*$/ ||
+		     $line =~ /^rename (?:from|to) [\w\/\.\-]+\s*$/)) {
+			$is_git_diff_rename = 1;
+			$is_patch = 1;
+		}
+
+		if ($line =~ /^diff \-\-git /) {
+			$is_git_diff = 1;
 		}
 
 		my $hunk_line = ($realcnt != 0);

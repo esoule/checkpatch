@@ -1072,19 +1072,19 @@ sub is_source_file_10($$) {
 
 	## check we are in a valid source file
 	if ($chk_cxx) {
-		return ($realfile =~ /\.(h|c|cc|cpp|cxx|s|S|pl|sh|dtsi|dts)$/);
+		return ($realfile =~ /\.(h|c|cc|cpp|cxx|s|S|sh|dtsi|dts)$/);
 	}
-	return ($realfile =~ /\.(h|c|s|S|pl|sh|dtsi|dts)$/);
+	return ($realfile =~ /\.(h|c|s|S|sh|dtsi|dts)$/);
 }
 
 sub is_source_file_20($$) {
 	my ($realfile, $chk_cxx) = @_;
 
-	## check we are in a valid source file C/C++ or perl
+	## check we are in a valid source file C/C++
 	if ($chk_cxx) {
-		return ($realfile =~ /\.(h|c|cc|cpp|cxx|pl|dtsi|dts)$/);
+		return ($realfile =~ /\.(h|c|cc|cpp|cxx|dtsi|dts)$/);
 	}
-	return ($realfile =~ /\.(h|c|pl|dtsi|dts)$/);
+	return ($realfile =~ /\.(h|c|dtsi|dts)$/);
 }
 
 sub is_c_cxx_file($$) {
@@ -2677,20 +2677,6 @@ sub process {
 				$herecurr) if (!$emitted_corrupt++);
 		}
 
-# Check for absolute kernel paths.
-		if ($tree) {
-			while ($line =~ m{(?:^|\s)(/\S*)}g) {
-				my $file = $1;
-
-				if ($file =~ m{^(.*?)(?::\d+)+:?$} &&
-				    check_absolute_file($1, $herecurr)) {
-					#
-				} else {
-					check_absolute_file($file, $herecurr);
-				}
-			}
-		}
-
 # UTF-8 regex found at http://www.w3.org/International/questions/qa-forms-utf-8.en.php
 		if ($chk_utf8 && ($realfile =~ /^$/ || $line =~ /^\+/) &&
 		    $rawline !~ m/^$UTF8*$/) {
@@ -2726,6 +2712,20 @@ sub process {
 		    $rawline =~ /$NON_ASCII_UTF8/) {
 			WARN("UTF8_BEFORE_PATCH",
 			    "8-bit UTF-8 used in possible commit log\n" . $herecurr);
+		}
+
+# Check for absolute kernel paths in commit message
+		if ($tree && $in_commit_log) {
+			while ($line =~ m{(?:^|\s)(/\S*)}g) {
+				my $file = $1;
+
+				if ($file =~ m{^(.*?)(?::\d+)+:?$} &&
+				    check_absolute_file($1, $herecurr)) {
+					#
+				} else {
+					check_absolute_file($file, $herecurr);
+				}
+			}
 		}
 
 # Check for various typo / spelling mistakes

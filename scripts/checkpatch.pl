@@ -423,6 +423,68 @@ our $UTF8	= qr{
 }x;
 
 our $typeC99Typedefs = qr{(?:__)?(?:[us]_?)?int_?(?:8|16|32|64)_t};
+
+our $typeOtherC99Typedefs = qr{(?x:
+	(?:u)?int_(?:fast|least)(?:8|16|32|64)_t |
+	(?:u)?intmax_t |
+	(?:u)?intptr_t |
+	imaxdiv_t       # last entry
+)};
+
+our $typeOtherLibcTypedefs = qr{(?x:
+	DIR |
+	FILE |
+	blkcnt(?:64)?_t |
+	blksize_t |
+	caddr_t |
+	clock_t |
+	clockid_t |
+	daddr_t |
+	dev_t |
+	div_t |
+	fd_mask |
+	fd_set |
+	fpos(?:64)?_t |
+	fsblkcnt(?:64)?_t |
+	fsfilcnt(?:64)?_t |
+	fsid_t |
+	gid_t |
+	id_t |
+	in_addr_t |
+	in_port_t |
+	ino(?:64)?_t |
+	key_t |
+	ldiv_t |
+	lldiv_t |
+	loff_t |
+	mode_t |
+	nlink_t |
+	off(?:64)?_t |
+	pid_t |
+	pthread_[a-z]{2,14}_t |
+	pthread_t |
+	ptrdiff_t |
+	quad_t |
+	register_t |
+	sa_family_t |
+	sigset_t |
+	size_t |
+	socklen_t |
+	ssize_t |
+	suseconds_t |
+	time_t |
+	timer_t |
+	trace_attr_t |
+	trace_event_id_t |
+	trace_event_set_t |
+	trace_id_t |
+	u_quad_t |
+	uid_t |
+	useconds_t |
+	va_list |
+	wchar_t         # last entry
+)};
+
 our $typeOtherOSTypedefs = qr{(?x:
 	u_(?:char|short|int|long) |          # bsd
 	u(?:nchar|short|int|long)            # sysv
@@ -433,6 +495,8 @@ our $typeKernelTypedefs = qr{(?x:
 )};
 our $typeTypedefs = qr{(?x:
 	$typeC99Typedefs\b|
+	$typeOtherC99Typedefs\b|
+	$typeOtherLibcTypedefs\b|
 	$typeOtherOSTypedefs\b|
 	$typeKernelTypedefs\b
 )};

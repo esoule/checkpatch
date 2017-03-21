@@ -1,5 +1,9 @@
 #!/bin/sh
-PARAM="-npro -kr -i8 -ts8 -sob -l500 -ss -ncs -cp1"
+SCRIPTS_HOME="$(cd "$(dirname "$0")" && cd ../.. && pwd)"
+
+T_OPTS="$( cat "${SCRIPTS_HOME}/scripts/code/typedefs.txt" | sed -e 's/^\([^ ]\)/-T\1/;' | tr '\012' ' ' )"
+
+PARAM="-npro -kr -i8 -ts8 -sob -l500 -ss -ncs -cp1 ${T_OPTS}"
 RES=`indent --version`
 if [ "$RES" = "" ]; then
 	exit 1

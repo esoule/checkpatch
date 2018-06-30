@@ -27,7 +27,7 @@ my $tst_only;
 my $emacs = 0;
 my $terse = 0;
 my $showfile = 0;
-my $file = 0;
+my $file = 1;
 my $git = 0;
 my %git_commits = ();
 my $check = 0;

@@ -19,20 +19,20 @@ my $V = '0.32';
 
 use Getopt::Long qw(:config no_auto_abbrev);
 
-my $quiet = 0;
+my $quiet = 1;
 my $tree = 0;
 my $chk_signoff = 0;
 my $chk_patch = 1;
 my $tst_only;
 my $emacs = 0;
 my $terse = 0;
-my $showfile = 0;
+my $showfile = 1;
 my $file = 1;
 my $git = 0;
 my %git_commits = ();
 my $check = 0;
 my $check_orig = 0;
-my $summary = 1;
+my $summary = 0;
 my $mailback = 0;
 my $summary_file = 0;
 my $show_types = 1;
@@ -48,7 +48,7 @@ my %ignore_type = ();
 my @ignore = ();
 my $help = 0;
 my $configuration_file = ".checkpatch.conf";
-my $max_line_length = 80;
+my $max_line_length = 100;
 my $ignore_perl_version = 0;
 my $minimum_perl_version = 5.10.0;
 my $min_conf_desc_length = 4;
@@ -56,10 +56,10 @@ my $chk_utf8 = 1;
 my $chk_braces_single = 0;
 my $chk_cxx = 0;
 my $chk_maintainers = 0;
-my $spelling_warn = 0;
+my $spelling_warn = 1;
 my $spelling_file = "$D/spelling.txt";
-my $codespell = 0;
-my $codespellfile = "/usr/share/codespell/dictionary.txt";
+my $codespell = 1;
+my $codespellfile = "$D/codespell/dictionary.txt";
 my $conststructsfile = "$D/const_structs.checkpatch";
 my $typedefsfile = "";
 my $color = "auto";
@@ -2802,7 +2802,7 @@ sub process {
 			my $ptr = substr($blank, 0, length($utf8_prefix)) . "^";
 			my $hereptr = "$hereline$ptr\n";
 
-			CHK("INVALID_UTF8",
+			WARN("INVALID_UTF8",
 			    "Invalid UTF-8, patch and commit message should be encoded in UTF-8\n" . $hereptr);
 		}
 
@@ -3033,7 +3033,7 @@ sub process {
 
 				if ($comment !~ /^$/ &&
 				    $rawline !~ /^\+\Q$comment\E SPDX-License-Identifier: /) {
-					WARN("SPDX_LICENSE_TAG",
+					CHK("SPDX_LICENSE_TAG",
 					     "Missing or malformed SPDX-License-Identifier tag in line $checklicenseline\n" . $herecurr);
 				}
 			}
@@ -3119,7 +3119,7 @@ sub process {
 		    $rawline =~ /^\+\s*        \s*/) {
 			my $herevet = "$here\n" . cat_vet($rawline) . "\n";
 			$rpt_cleaners = 1;
-			if (ERROR("CODE_INDENT",
+			if (CHK("CODE_INDENT",
 				  "code indent should use tabs where possible\n" . $herevet) &&
 			    $fix) {
 				$fixed[$fixlinenr] =~ s/^\+([ \t]+)/"\+" . tabify($1)/e;
@@ -3184,7 +3184,7 @@ sub process {
 				if ($newindent ne $goodtabindent &&
 				    $newindent ne $goodspaceindent) {
 
-					if (CHK("PARENTHESIS_ALIGNMENT",
+					if (WARN("PARENTHESIS_ALIGNMENT",
 						"Alignment should match open parenthesis\n" . $hereprev) &&
 					    $fix && $line =~ /^\+/) {
 						$fixed[$fixlinenr] =~
@@ -3203,7 +3203,7 @@ sub process {
 #   known attributes or the __attribute__ keyword
 		if ($line =~ /^\+(.*)\(\s*$Type\s*\)([ \t]++)((?![={]|\\$|$Attribute|__attribute__))/ &&
 		    (!defined($1) || $1 !~ /\b(?:sizeof|__alignof__)\s*$/)) {
-			if (CHK("SPACING",
+			if (WARN("SPACING",
 				"No space is necessary after a cast\n" . $herecurr) &&
 			    $fix) {
 				$fixed[$fixlinenr] =~
@@ -3277,7 +3277,7 @@ sub process {
 		      $line =~ /^\+\s*DECLARE/ ||
 		      $line =~ /^\+\s*builtin_[\w_]*driver/ ||
 		      $line =~ /^\+\s*__setup/)) {
-			if (CHK("LINE_SPACING",
+			if (WARN("LINE_SPACING",
 				"Please use a blank line after function/struct/union/enum declarations\n" . $hereprev) &&
 			    $fix) {
 				fix_insert_line($fixlinenr, "\+");
@@ -3288,7 +3288,7 @@ sub process {
 		if ($prevline =~ /^[\+ ]\s*$/ &&
 		    $line =~ /^\+\s*$/ &&
 		    $last_blank_line != ($linenr - 1)) {
-			if (CHK("LINE_SPACING",
+			if (WARN("LINE_SPACING",
 				"Please don't use multiple blank lines\n" . $hereprev) &&
 			    $fix) {
 				fix_delete_line($fixlinenr, $rawline);
@@ -3348,7 +3348,7 @@ sub process {
 #  3) hanging labels
 		if ($rawline =~ /^\+ / && $line !~ /^\+ *(?:$;|#|$Ident:)/)  {
 			my $herevet = "$here\n" . cat_vet($rawline) . "\n";
-			if (WARN("LEADING_SPACE",
+			if (CHK("LEADING_SPACE",
 				 "please, no spaces at the start of a line\n" . $herevet) &&
 			    $fix) {
 				$fixed[$fixlinenr] =~ s/^\+([ \t]+)/"\+" . tabify($1)/e;
@@ -3546,7 +3546,7 @@ sub process {
 			#print "pre<$pre_ctx>\nline<$line>\nctx<$ctx>\nnext<$lines[$ctx_ln - 1]>\n";
 
 			if ($ctx !~ /{\s*/ && defined($lines[$ctx_ln - 1]) && $lines[$ctx_ln - 1] =~ /^\+\s*{/) {
-				ERROR("OPEN_BRACE",
+				CHK("OPEN_BRACE",
 				      "that open brace { should be on the previous line\n" .
 					"$here\n$ctx\n$rawlines[$ctx_ln - 1]\n");
 			}
@@ -3942,7 +3942,7 @@ sub process {
 
 ##			print "1: from<$from> to<$to> ident<$ident>\n";
 			if ($from ne $to) {
-				if (ERROR("POINTER_LOCATION",
+				if (CHK("POINTER_LOCATION",
 					  "\"(foo$from)\" should be \"(foo$to)\"\n" .  $herecurr) &&
 				    $fix) {
 					my $sub_from = $ident;
@@ -3969,7 +3969,7 @@ sub process {
 
 ##			print "2: from<$from> to<$to> ident<$ident>\n";
 			if ($from ne $to && $ident !~ /^$Modifier$/) {
-				if (ERROR("POINTER_LOCATION",
+				if (WARNs("POINTER_LOCATION",
 					  "\"foo${from}bar\" should be \"foo${to}bar\"\n" .  $herecurr) &&
 				    $fix) {
 
@@ -4069,7 +4069,7 @@ sub process {
 # open braces for enum, union and struct go on the same line.
 		if ($line =~ /^.\s*{/ &&
 		    $prevline =~ /^.\s*(?:typedef\s+)?(enum|union|struct)(?:\s+$Ident)?\s*$/) {
-			if (ERROR("OPEN_BRACE",
+			if (CHK("OPEN_BRACE",
 				  "open brace '{' following $1 go on the same line\n" . $hereprev) &&
 			    $fix && $prevline =~ /^\+/ && $line =~ /^\+/) {
 				fix_delete_line($fixlinenr - 1, $prevrawline);
@@ -4460,14 +4460,14 @@ sub process {
 				{
 					if ($check) {
 						if (defined $fix_elements[$n + 2] && $ctx !~ /[EW]x[EW]/) {
-							if (CHK("SPACING",
+							if (WARN("SPACING",
 								"spaces preferred around that '$op' $at\n" . $hereptr)) {
 								$good = rtrim($fix_elements[$n]) . " " . trim($fix_elements[$n + 1]) . " ";
 								$fix_elements[$n + 2] =~ s/^\s+//;
 								$line_fixed = 1;
 							}
 						} elsif (!defined $fix_elements[$n + 2] && $ctx !~ /Wx[OE]/) {
-							if (CHK("SPACING",
+							if (WARN("SPACING",
 								"space preferred before that '$op' $at\n" . $hereptr)) {
 								$good = rtrim($fix_elements[$n]) . " " . trim($fix_elements[$n + 1]);
 								$line_fixed = 1;
@@ -4561,7 +4561,7 @@ sub process {
 
 # check for multiple assignments
 		if ($line =~ /^.\s*$Lval\s*=\s*$Lval\s*=(?!=)/) {
-			CHK("MULTIPLE_ASSIGNMENTS",
+			WARN("MULTIPLE_ASSIGNMENTS",
 			    "multiple assignments should be avoided\n" . $herecurr);
 		}
 
@@ -4654,7 +4654,7 @@ sub process {
 
 		while ($line =~ /(?:[^&]&\s*|\*)\(\s*($Ident\s*(?:$Member\s*)+)\s*\)/g) {
 			my $var = $1;
-			if (CHK("UNNECESSARY_PARENTHESES",
+			if (WARN("UNNECESSARY_PARENTHESES",
 				"Unnecessary parentheses around $var\n" . $herecurr) &&
 			    $fix) {
 				$fixed[$fixlinenr] =~ s/\(\s*\Q$var\E\s*\)/$var/;
@@ -4666,7 +4666,7 @@ sub process {
 # but not "if (foo->bar) (" to avoid some false positives
 		if ($line =~ /(\bif\s*|)(\(\s*$Ident\s*(?:$Member\s*)+\))[ \t]*\(/ && $1 !~ /^if/) {
 			my $var = $2;
-			if (CHK("UNNECESSARY_PARENTHESES",
+			if (WARN("UNNECESSARY_PARENTHESES",
 				"Unnecessary parentheses around function pointer $var\n" . $herecurr) &&
 			    $fix) {
 				my $var2 = deparenthesize($var);
@@ -4916,7 +4916,7 @@ sub process {
 		# indent level to be relevant to each other.
 		if ($prevline=~/}\s*$/ and $line=~/^.\s*else\s*/ &&
 		    $previndent == $indent) {
-			if (ERROR("ELSE_AFTER_BRACE",
+			if (CHK("ELSE_AFTER_BRACE",
 				  "else should follow close brace '}'\n" . $hereprev) &&
 			    $fix && $prevline =~ /^\+/ && $line =~ /^\+/) {
 				fix_delete_line($fixlinenr - 1, $prevrawline);
@@ -5302,7 +5302,7 @@ sub process {
 				}
 				if ($chk_braces_single && $seen) {
 					if ($sum_allowed == 0) {
-						WARN("BRACES",
+						CHK("BRACES",
 						     "braces {} are not necessary for any arm of this statement\n" . $herectx);
 					} elsif ($sum_allowed != $allow &&
 						 $seen != $allow) {
@@ -5316,7 +5316,7 @@ sub process {
 					if (!$seen ||
 						  ($sum_allowed != $allow &&
 						  $seen != $allow)) {
-						WARN("BRACES",
+						CHK("BRACES",
 						     "braces {} are necessary on all arms of this statement ($seen)\n" . $herectx);
 					}
 				}
@@ -5377,19 +5377,19 @@ sub process {
 # check for single line unbalanced braces
 		if ($sline =~ /^.\s*\}\s*else\s*$/ ||
 		    $sline =~ /^.\s*else\s*\{\s*$/) {
-			CHK("BRACES", "Unbalanced braces around else statement\n" . $herecurr);
+			WARN("BRACES", "Unbalanced braces around else statement\n" . $herecurr);
 		}
 
 # check for unnecessary blank lines around braces
 		if (($line =~ /^.\s*}\s*$/ && $prevrawline =~ /^.\s*$/)) {
-			if (CHK("BRACES",
+			if (WARN("BRACES",
 				"Blank lines aren't necessary before a close brace '}'\n" . $hereprev) &&
 			    $fix && $prevrawline =~ /^\+/) {
 				fix_delete_line($fixlinenr - 1, $prevrawline);
 			}
 		}
 		if (($rawline =~ /^.\s*$/ && $prevline =~ /^..*{\s*$/)) {
-			if (CHK("BRACES",
+			if (WARN("BRACES",
 				"Blank lines aren't necessary after an open brace '{'\n" . $hereprev) &&
 			    $fix) {
 				fix_delete_line($fixlinenr, $rawline);
@@ -5466,7 +5466,7 @@ sub process {
 
 # concatenated string without spaces between elements
 		if ($line =~ /$String[A-Z_]/ || $line =~ /[A-Za-z0-9_]$String/) {
-			CHK("CONCATENATED_STRING",
+			WARN("CONCATENATED_STRING",
 			    "Concatenated strings should use spaces between elements\n" . $herecurr);
 		}
 
@@ -6225,7 +6225,7 @@ sub process {
 # p = alloc(sizeof(struct foo), ...) should be p = alloc(sizeof(*p), ...)
 		if ($^V && $^V ge 5.10.0 &&
 		    $line =~ /\b($Lval)\s*\=\s*(?:$balanced_parens)?\s*([kv][mz]alloc(?:_node)?)\s*\(\s*(sizeof\s*\(\s*struct\s+$Lval\s*\))/) {
-			CHK("ALLOC_SIZEOF_STRUCT",
+			WARN("ALLOC_SIZEOF_STRUCT",
 			    "Prefer $3(sizeof(*$1)...) over $3($4...)\n" . $herecurr);
 		}
 
@@ -6377,7 +6377,7 @@ sub process {
 					$op = "";
 				}
 
-				CHK("BOOL_COMPARISON",
+				WARN("BOOL_COMPARISON",
 				    "Using comparison to $otype is error prone\n" . $herecurr);
 
 ## maybe suggesting a correct construct would better

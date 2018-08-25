@@ -2597,8 +2597,12 @@ sub process {
 		      (defined($1) || defined($2))))) {
 			$is_patch = 1;
 			$reported_maintainer_file = 1;
+			if (0) {
+			# Disable for this project
 			WARN("FILE_PATH_CHANGES",
 			     "added, moved or deleted file(s), does MAINTAINERS need updating?\n" . $herecurr);
+			# Disable for this project
+			}
 		}
 
 # Check for wrappage within a valid hunk of the file

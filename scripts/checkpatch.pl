@@ -19,8 +19,8 @@ my $V = '0.32';
 use Getopt::Long qw(:config no_auto_abbrev);
 
 my $quiet = 0;
-my $tree = 0;
-my $chk_signoff = 0;
+my $tree = 1;
+my $chk_signoff = 1;
 my $chk_patch = 1;
 my $tst_only;
 my $emacs = 0;
@@ -34,7 +34,7 @@ my $check_orig = 0;
 my $summary = 1;
 my $mailback = 0;
 my $summary_file = 0;
-my $show_types = 1;
+my $show_types = 0;
 my $list_types = 0;
 my $fix = 0;
 my $fix_inplace = 0;
@@ -51,10 +51,6 @@ my $max_line_length = 80;
 my $ignore_perl_version = 0;
 my $minimum_perl_version = 5.10.0;
 my $min_conf_desc_length = 4;
-my $chk_utf8 = 1;
-my $chk_braces_single = 0;
-my $chk_maintainers = 0;
-my $spelling_warn = 0;
 my $spelling_file = "$D/spelling.txt";
 my $codespell = 0;
 my $codespellfile = "/usr/share/codespell/dictionary.txt";
@@ -71,8 +67,8 @@ Version: $V
 
 Options:
   -q, --quiet                quiet
-  --tree                     run with a kernel tree
-  --signoff                  check for 'Signed-off-by' line
+  --no-tree                  run without a kernel tree
+  --no-signoff               do not check for 'Signed-off-by' line
   --patch                    treat FILE as patchfile (default)
   --emacs                    emacs compile window format
   --terse                    one line per report
@@ -92,7 +88,7 @@ Options:
   --list-types               list the possible message types
   --types TYPE(,TYPE2...)    show only these comma separated message types
   --ignore TYPE(,TYPE2...)   ignore various comma separated message types
-  --no-show-types            do not show message types in the output
+  --show-types               show the specific message type in the output
   --max-line-length=n        set the maximum line length, if exceeded, warn
   --min-conf-desc-length=n   set the min description length, if shorter, warn
   --root=PATH                PATH to the kernel tree root
@@ -114,9 +110,6 @@ Options:
                              file.  It's your fault if there's no backup or git
   --ignore-perl-version      override checking of perl version.  expect
                              runtime errors.
-  --no-utf8                  disable invalid UTF-8 check
-  --braces-single            warn about braces for single statement blocks
-  --spelling                 Warn about typos and spelling problems
   --codespell                Use the codespell dictionary for spelling/typos
                              (default:/usr/share/codespell/dictionary.txt)
   --codespellfile            Use this codespell dictionary
@@ -213,9 +206,6 @@ GetOptions(
 	'ignore-perl-version!' => \$ignore_perl_version,
 	'debug=s'	=> \%debug,
 	'test-only=s'	=> \$tst_only,
-	'utf8!'		=> \$chk_utf8,
-	'braces-single!' => \$chk_braces_single,
-	'spelling!'	=> \$spelling_warn,
 	'codespell!'	=> \$codespell,
 	'codespellfile=s'	=> \$codespellfile,
 	'color!'	=> \$color,
@@ -325,7 +315,6 @@ our $Sparse	= qr{
 			__kernel|
 			__force|
 			__iomem|
-			__pmem|
 			__must_check|
 			__init_refok|
 			__kprobes|
@@ -2048,12 +2037,6 @@ sub check_absolute_file {
 	}
 }
 
-sub is_preprocessor_line {
-	my ($line) = @_;
-
-	return ($line =~ /^.\s*\#\s*(?:define|elif|else|endif|error|if|ifdef|ifndef|include|line|undef|warning)\b/);
-}
-
 sub trim {
 	my ($string) = @_;
 
@@ -2148,8 +2131,6 @@ sub process {
 	our $clean = 1;
 	my $signoff = 0;
 	my $is_patch = 0;
-	my $is_git_diff = 0;
-	my $is_git_diff_rename = 0;
 	my $in_header_lines = $file ? 0 : 1;
 	my $in_commit_log = 0;		#Scanning lines before patch
 	my $has_commit_log = 0;		#Encountered lines before patch
@@ -2206,7 +2187,7 @@ sub process {
 
 		if ($rawline=~/^\+\+\+\s+(\S+)/) {
 			$setup_docs = 0;
-			if ($1 =~ m@Documentation/kernel-parameters.txt$@) {
+			if ($1 =~ m@Documentation/admin-guide/kernel-parameters.rst$@) {
 				$setup_docs = 1;
 			}
 			#next;
@@ -2327,17 +2308,6 @@ sub process {
 
 		} elsif ($realcnt == 1) {
 			$realcnt--;
-		}
-
-		if ($is_git_diff &&
-		    ($line =~ /^(?:new|deleted) file mode\s*\d+\s*$/ ||
-		     $line =~ /^rename (?:from|to) [\w\/\.\-]+\s*$/)) {
-			$is_git_diff_rename = 1;
-			$is_patch = 1;
-		}
-
-		if ($line =~ /^diff \-\-git /) {
-			$is_git_diff = 1;
 		}
 
 		my $hunk_line = ($realcnt != 0);
@@ -2615,7 +2585,6 @@ sub process {
 
 # Check for added, moved or deleted files
 		if (!$reported_maintainer_file && !$in_commit_log &&
-		    $chk_maintainers &&
 		    ($line =~ /^(?:new|deleted) file mode\s*\d+\s*$/ ||
 		     $line =~ /^rename (?:from|to) [\w\/\.\-]+\s*$/ ||
 		     ($line =~ /\{\s*([\w\/\.\-]*)\s*\=\>\s*([\w\/\.\-]*)\s*\}/ &&
@@ -2634,7 +2603,7 @@ sub process {
 		}
 
 # UTF-8 regex found at http://www.w3.org/International/questions/qa-forms-utf-8.en.php
-		if ($chk_utf8 && ($realfile =~ /^$/ || $line =~ /^\+/) &&
+		if (($realfile =~ /^$/ || $line =~ /^\+/) &&
 		    $rawline !~ m/^$UTF8*$/) {
 			my ($utf8_prefix) = ($rawline =~ /^($UTF8*)/);
 
@@ -2694,7 +2663,6 @@ sub process {
 				$typo_fix = uc($typo_fix) if ($typo =~ /^[A-Z]+$/);
 				my $msg_type = \&WARN;
 				$msg_type = \&CHK if ($file);
-				$msg_type = \&WARN if ($spelling_warn);
 				if (&{$msg_type}("TYPO_SPELLING",
 						 "'$typo' may be misspelled - perhaps '$typo_fix'?\n" . $herecurr) &&
 				    $fix) {
@@ -3153,8 +3121,6 @@ sub process {
 
 # check we are in a valid C source file if not then ignore this hunk
 		next if ($realfile !~ /\.(h|c)$/);
-
-		my $is_prepro = is_preprocessor_line($line);
 
 # check indentation of any line with a bare else
 # (but not if it is a multiple line "if (foo) return bar; else return baz;")
@@ -3709,15 +3675,6 @@ sub process {
 			}
 		}
 
-# check for uses of DEFINE_PCI_DEVICE_TABLE
-		if ($line =~ /\bDEFINE_PCI_DEVICE_TABLE\s*\(\s*(\w+)\s*\)\s*=/) {
-			if (WARN("DEFINE_PCI_DEVICE_TABLE",
-				 "Prefer struct pci_device_id over deprecated DEFINE_PCI_DEVICE_TABLE\n" . $herecurr) &&
-			    $fix) {
-				$fixed[$fixlinenr] =~ s/\b(?:static\s+|)DEFINE_PCI_DEVICE_TABLE\s*\(\s*(\w+)\s*\)\s*=\s*/static const struct pci_device_id $1\[\] = /;
-			}
-		}
-
 # check for new typedefs, only function parameters and sparse annotations
 # make sense.
 		if ($line =~ /\btypedef\s/ &&
@@ -3867,7 +3824,7 @@ sub process {
 
 # function brace can't be on same line, except for #defines of do while,
 # or if closed on same line
-		if (($line=~/$Type\s*$Ident\(.*\).*\s*\{/) and
+		if (($line=~/$Type\s*$Ident\(.*\).*\s*{/) and
 		    !($line=~/\#\s*define.*do\s\{/) and !($line=~/}/)) {
 			if (ERROR("OPEN_BRACE",
 				  "open brace '{' following function declarations go on the next line\n" . $herecurr) &&
@@ -5021,19 +4978,17 @@ sub process {
 		}
 
 # check for redundant bracing round if etc
-		if ($line =~ /(^.*)\bif\b/ && $1 !~ /else\s*$/ &&
-					!$is_prepro) {
+		if ($line =~ /(^.*)\bif\b/ && $1 !~ /else\s*$/) {
 			my ($level, $endln, @chunks) =
 				ctx_statement_full($linenr, $realcnt, 1);
 			#print "chunks<$#chunks> linenr<$linenr> endln<$endln> level<$level>\n";
 			#print "APW: <<$chunks[1][0]>><<$chunks[1][1]>>\n";
-			if ($#chunks >= 0 && $level == 0) {
+			if ($#chunks > 0 && $level == 0) {
 				my @allowed = ();
 				my $allow = 0;
 				my $seen = 0;
 				my $herectx = $here . "\n";
 				my $ln = $linenr - 1;
-				my $sum_allowed = 0;
 				for my $chunk (@chunks) {
 					my ($cond, $block) = @{$chunk};
 
@@ -5070,11 +5025,10 @@ sub process {
 					$allow++;
 				}
 				if ($seen) {
+					my $sum_allowed = 0;
 					foreach (@allowed) {
 						$sum_allowed += $_;
 					}
-				}
-				if ($chk_braces_single && $seen) {
 					if ($sum_allowed == 0) {
 						WARN("BRACES",
 						     "braces {} are not necessary for any arm of this statement\n" . $herectx);
@@ -5084,21 +5038,10 @@ sub process {
 						    "braces {} should be used on all arms of this statement\n" . $herectx);
 					}
 				}
-
-				## if enforcing braces for single statement blocks
-				if (!$chk_braces_single) {
-					if (!$seen ||
-						  ($sum_allowed != $allow &&
-						  $seen != $allow)) {
-						WARN("BRACES",
-						     "braces {} are necessary on all arms of this statement ($seen)\n" . $herectx);
-					}
-				}
 			}
 		}
 		if (!defined $suppress_ifbraces{$linenr - 1} &&
-					$line =~ /\b(if|while|for|else)\b/ &&
-					!$is_prepro) {
+					$line =~ /\b(if|while|for|else)\b/) {
 			my $allowed = 0;
 
 			# Check the pre-context.
@@ -5139,7 +5082,7 @@ sub process {
 					$allowed = 1;
 				}
 			}
-			if ($chk_braces_single && $level == 0 && $block =~ /^\s*\{/ && !$allowed) {
+			if ($level == 0 && $block =~ /^\s*\{/ && !$allowed) {
 				my $herectx = $here . "\n";
 				my $cnt = statement_rawlines($block);
 
@@ -5149,19 +5092,6 @@ sub process {
 
 				WARN("BRACES",
 				     "braces {} are not necessary for single statement blocks\n" . $herectx);
-			}
-
-			## if enforcing braces for single statement blocks
-			if (!$chk_braces_single && $level == 0 && $block !~ /^\s*\{/ && !$allowed) {
-				my $herectx = $here . "\n";
-				my $cnt = statement_rawlines($block);
-
-				for (my $n = 0; $n < $cnt; $n++) {
-					$herectx .= raw_line($linenr, $n) . "\n";
-				}
-
-				WARN("BRACES",
-				     "braces {} are necessary even for single statement blocks\n" . $herectx);
 			}
 		}
 
@@ -5185,7 +5115,7 @@ sub process {
 		my $asm_volatile = qr{\b(__asm__|asm)\s+(__volatile__|volatile)\b};
 		if ($line =~ /\bvolatile\b/ && $line !~ /$asm_volatile/) {
 			WARN("VOLATILE",
-			     "Use of volatile is usually wrong: see Documentation/volatile-considered-harmful.txt\n" . $herecurr);
+			     "Use of volatile is usually wrong: see Documentation/process/volatile-considered-harmful.rst\n" . $herecurr);
 		}
 
 # Check for user-visible strings broken across lines, which breaks the ability
@@ -5273,7 +5203,7 @@ sub process {
 
 # warn about #if 0
 		if ($line =~ /^.\s*\#\s*if\s+0\b/) {
-			WARN("REDUNDANT_CODE",
+			CHK("REDUNDANT_CODE",
 			    "if this code is redundant consider removing it\n" .
 				$herecurr);
 		}
@@ -5594,12 +5524,6 @@ sub process {
 			     "__packed is preferred over __attribute__((packed))\n" . $herecurr);
 		}
 
-# Check for new packed members, warn to use care
-		if ($line =~ /\b(__attribute__\s*\(\s*\(.*\bpacked|__packed)\b/) {
-			WARN("NEW_PACKED",
-			     "Adding new packed members is to be done with care\n" . $herecurr);
-		}
-
 # Check for __attribute__ aligned, prefer __aligned
 		if ($realfile !~ m@\binclude/uapi/@ &&
 		    $line =~ /\b__attribute__\s*\(\s*\(.*aligned/) {
@@ -5907,7 +5831,7 @@ sub process {
 
 			if (!grep(/$name/, @setup_docs)) {
 				CHK("UNDOCUMENTED_SETUP",
-				    "__setup appears un-documented -- check Documentation/kernel-parameters.txt\n" . $herecurr);
+				    "__setup appears un-documented -- check Documentation/admin-guide/kernel-parameters.rst\n" . $herecurr);
 			}
 		}
 
@@ -6145,7 +6069,7 @@ sub process {
 		}
 
 # whine about ACCESS_ONCE
-		if (0 && $^V && $^V ge 5.10.0 &&
+		if ($^V && $^V ge 5.10.0 &&
 		    $line =~ /\bACCESS_ONCE\s*$balanced_parens\s*(=(?!=))?\s*($FuncArg)?/) {
 			my $par = $1;
 			my $eq = $2;
@@ -6370,14 +6294,6 @@ EOM
 	}
 
 	if ($quiet == 0) {
-		if ($clean != 1) {
-			print << "EOM";
-
-NOTE: This patch style checker is only a guide, not a replacement for
-      human judgment. Take its advice with a grain of salt.
-EOM
-		}
-
 		print "\n";
 		if ($clean == 1) {
 			print "$vname has no obvious style problems and is ready for submission.\n";

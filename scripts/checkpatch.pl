@@ -53,7 +53,6 @@ my $minimum_perl_version = 5.10.0;
 my $min_conf_desc_length = 4;
 my $chk_utf8 = 1;
 my $chk_braces_single = 0;
-my $chk_cxx = 0;
 my $chk_maintainers = 0;
 my $spelling_warn = 0;
 my $spelling_file = "$D/spelling.txt";
@@ -117,7 +116,6 @@ Options:
                              runtime errors.
   --no-utf8                  disable invalid UTF-8 check
   --braces-single            warn about braces for single statement blocks
-  --cxx                      check C++ files (EXPERIMENTAL)
   --spelling                 Warn about typos and spelling problems
   --codespell                Use the codespell dictionary for spelling/typos
                              (default:/usr/share/codespell/dictionary.txt)
@@ -217,7 +215,6 @@ GetOptions(
 	'test-only=s'	=> \$tst_only,
 	'utf8!'		=> \$chk_utf8,
 	'braces-single!' => \$chk_braces_single,
-	'cxx!'		=> \$chk_cxx,
 	'spelling!'	=> \$spelling_warn,
 	'codespell!'	=> \$codespell,
 	'codespellfile=s'	=> \$codespellfile,
@@ -395,8 +392,6 @@ our $Operators	= qr{
 		  }x;
 
 our $c90_Keywords = qr{do|for|while|if|else|return|goto|continue|switch|default|case|break}x;
-
-our $CxxWordOperators = qr{new|delete|delete\[\]}x;
 
 our $BasicType;
 our $NonptrType;
@@ -1065,46 +1060,6 @@ sub format_email {
 	}
 
 	return $formatted_email;
-}
-
-sub is_source_file_10($$) {
-	my ($realfile, $chk_cxx) = @_;
-
-	## check we are in a valid source file
-	if ($chk_cxx) {
-		return ($realfile =~ /\.(h|c|cc|cpp|cxx|s|S|sh|dtsi|dts)$/);
-	}
-	return ($realfile =~ /\.(h|c|s|S|sh|dtsi|dts)$/);
-}
-
-sub is_source_file_20($$) {
-	my ($realfile, $chk_cxx) = @_;
-
-	## check we are in a valid source file C/C++
-	if ($chk_cxx) {
-		return ($realfile =~ /\.(h|c|cc|cpp|cxx|dtsi|dts)$/);
-	}
-	return ($realfile =~ /\.(h|c|dtsi|dts)$/);
-}
-
-sub is_c_cxx_file($$) {
-	my ($realfile, $chk_cxx) = @_;
-
-	## check we are in a valid C/C++ source file
-	if ($chk_cxx) {
-		return ($realfile =~ /\.(h|c|cc|cpp|cxx)$/);
-	}
-	return ($realfile =~ /\.(h|c)$/);
-}
-
-sub is_cxx_file($$) {
-	my ($realfile, $chk_cxx) = @_;
-
-	## check we are in a valid C++ source file
-	if ($chk_cxx) {
-		return ($realfile =~ /\.(h|cc|cpp|cxx)$/);
-	}
-	return 0;
 }
 
 sub which {
@@ -2883,7 +2838,7 @@ sub process {
 		}
 
 # check we are in a valid source file if not then ignore this hunk
-		next if (!is_source_file_10($realfile, $chk_cxx));
+		next if ($realfile !~ /\.(h|c|s|S|sh|dtsi|dts)$/);
 
 # line length limit (with some exclusions)
 #
@@ -2962,7 +2917,7 @@ sub process {
 		}
 
 # check we are in a valid source file C or perl if not then ignore this hunk
-		next if (!is_source_file_20($realfile, $chk_cxx));
+		next if ($realfile !~ /\.(h|c|pl|dtsi|dts)$/);
 
 # at the beginning of a line any tabs must come first and anything
 # more than 8 must use tabs.
@@ -3151,9 +3106,6 @@ sub process {
 		     $prevline =~ /^\+\s+$Ident(?:\s+|\s*\*\s*)$Ident\s*[=,;\[]/ ||
 			# known declaration macros
 		     $prevline =~ /^\+\s+$declaration_macros/) &&
-			# for C++ "delete $Ident" which can look like "$Ident $Ident"
-		    !(is_cxx_file($realfile, $chk_cxx) &&
-		      $prevline =~ /^\+\s+$CxxWordOperators\s+$Ident\s*[=,;\[]/) &&
 			# for "else if" which can look like "$Ident $Ident"
 		    !($prevline =~ /^\+\s+$c90_Keywords\b/ ||
 			# other possible extensions of declaration lines
@@ -3200,7 +3152,7 @@ sub process {
 		}
 
 # check we are in a valid C source file if not then ignore this hunk
-		next if (!is_c_cxx_file($realfile, $chk_cxx));
+		next if ($realfile !~ /\.(h|c)$/);
 
 		my $is_prepro = is_preprocessor_line($line);
 
@@ -3617,8 +3569,7 @@ sub process {
 		}
 
 # no C99 // comments
-		if (!is_cxx_file($realfile, $chk_cxx) &&
-				$line =~ m{//}) {
+		if ($line =~ m{//}) {
 			if (ERROR("C99_COMMENTS",
 				  "do not use C99 // comments\n" . $herecurr) &&
 			    $fix) {
@@ -4071,9 +4022,6 @@ sub process {
 			# cpp #elif statement condition may start with a (
 			} elsif ($ctx =~ /^.\s*\#\s*elif\s*$/) {
 
-			# Ignore 'catch (...)' in C++
-			} elsif ($name =~ /^catch$/ && is_cxx_file($realfile, $chk_cxx)) {
-
 			# If this whole things ends with a type its most
 			# likely a typedef for a function.
 			} elsif ($ctx =~ /$Type$/) {
@@ -4098,7 +4046,7 @@ sub process {
 				\+=|-=|\*=|\/=|%=|\^=|\|=|&=|
 				=>|->|<<|>>|<|>|=|!|~|
 				&&|\|\||,|\^|\+\+|--|&|\||\+|-|\*|\/|%|
-				\?:|\?|::|:
+				\?:|\?|:
 			}x;
 			my @elements = split(/($ops|;)/, $opline);
 
@@ -4210,20 +4158,6 @@ sub process {
 						}
 					}
 
-				# No spaces for:
-				#   :: (scope resolution operator in C++)
-				} elsif ($op eq '::' && is_cxx_file($realfile, $chk_cxx)) {
-					if ($ctx =~ /Wx.|.xW/) {
-						if (ERROR("SPACING",
-							  "spaces prohibited around that '$op' $at\n" . $hereptr)) {
-							$good = rtrim($fix_elements[$n]) . trim($fix_elements[$n + 1]);
-							if (defined $fix_elements[$n + 2]) {
-								$fix_elements[$n + 2] =~ s/^\s+//;
-							}
-							$line_fixed = 1;
-						}
-					}
-
 				# , must not have a space before and must have a space on the right.
 				} elsif ($op eq ',') {
 					my $rtrim_before = 0;
@@ -4257,10 +4191,6 @@ sub process {
 				# '*' as part of a type definition -- reported already.
 				} elsif ($opv eq '*_') {
 					#warn "'*' is part of type\n";
-
-				# No space before ~ in C++ for "Class::~Destructor"
-				} elsif ($op eq '~' && $ca =~ /::$/ && is_cxx_file($realfile, $chk_cxx)) {
-					# ~ used in destructor name
 
 				# unary operators should have a space before and
 				# none after.  May be left adjacent to another
@@ -4543,17 +4473,8 @@ sub process {
 			}
 		}
 
-#check for false positives that look like labels in C++
-		my $cxx_not_label = 0;
-		if (is_cxx_file($realfile, $chk_cxx)) {
-			if ($line =~ /^.\s+(?:private|protected|public):/) {
-				$cxx_not_label = 1;
-			}
-		}
-
 #goto labels aren't indented, allow a single space however
-		if (!$cxx_not_label &&
-		   $line=~/^.\s+[A-Za-z\d_]+:(?![0-9:]+)/ and
+		if ($line=~/^.\s+[A-Za-z\d_]+:(?![0-9]+)/ and
 		   !($line=~/^. [A-Za-z\d_]+:/) and !($line=~/^.\s+default:/)) {
 			if (WARN("INDENTED_LABEL",
 				 "labels should not be indented\n" . $herecurr) &&

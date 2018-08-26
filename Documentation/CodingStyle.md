@@ -1423,24 +1423,24 @@ expression used.  For instance:
 Appendix I) References
 ----------------------
 
-*  The C Programming Language, Second Edition    
-   by Brian W. Kernighan and Dennis M. Ritchie.    
-   Prentice Hall, Inc., 1988.    
-   ISBN 0-13-110362-8 (paperback), 0-13-110370-9 (hardback).
+The C Programming Language, Second Edition
+by Brian W. Kernighan and Dennis M. Ritchie.
+Prentice Hall, Inc., 1988.
+ISBN 0-13-110362-8 (paperback), 0-13-110370-9 (hardback).
 
-*  The Practice of Programming    
-   by Brian W. Kernighan and Rob Pike.    
-   Addison-Wesley, Inc., 1999.    
-   ISBN 0-201-61586-X.
+The Practice of Programming
+by Brian W. Kernighan and Rob Pike.
+Addison-Wesley, Inc., 1999.
+ISBN 0-201-61586-X.
 
-*  GNU manuals - where in compliance with K&R and this text - for cpp, gcc,    
-   gcc internals and indent, all available from http://www.gnu.org/manual/
+GNU manuals - where in compliance with K&R and this text - for cpp, gcc,
+gcc internals and indent, all available from http://www.gnu.org/manual/
 
-*  WG14 is the international standardization working group for the programming    
-   language C, URL: http://www.open-std.org/JTC1/SC22/WG14/
+WG14 is the international standardization working group for the programming
+language C, URL: http://www.open-std.org/JTC1/SC22/WG14/
 
-*  Kernel process/coding-style.rst, by greg@kroah.com at OLS 2002:    
-   http://www.kroah.com/linux/talks/ols_2002_kernel_codingstyle_talk/html/
+Kernel process/coding-style.rst, by greg@kroah.com at OLS 2002:
+http://www.kroah.com/linux/talks/ols_2002_kernel_codingstyle_talk/html/
 
 
 Appendix II) Lists and Keeping Them In Order

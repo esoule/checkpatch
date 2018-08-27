@@ -20,7 +20,7 @@ and NOT read it.  Burn them, it's a great symbolic gesture.
 >
 > Modifications are marked with ">" marks on the left margin.
 >
-> Updated: 2017-02-19 20:30.
+> Updated: 2018-08-26 21:45.
 >
 
 Anyway, here goes:
@@ -250,6 +250,16 @@ statement; in the latter case use braces in both branches:
 	} else {
 		otherwise();
 	}
+```
+
+Also, use braces when a loop contains more than a single simple statement:
+
+```
+	while (condition) {
+		if (test)
+			do_something();
+	}
+
 ```
 
 >
@@ -822,6 +832,14 @@ options `-kr -i8` (stands for `K&R, 8 character indents`), or use
 `indent` has a lot of options, and especially when it comes to comment
 re-formatting you may want to take a look at the man page.  But
 remember: `indent` is not a fix for bad programming.
+
+Note that you can also use the `clang-format` tool to help you with
+these rules, to quickly re-format parts of your code automatically,
+and to review full files in order to spot coding style mistakes,
+typos and possible improvements. It is also handy for sorting `#includes`,
+for aligning variables/macros, for reflowing text and other similar tasks.
+See the file `Documentation/process/clang-format.rst` (clangformat)
+for more details.
 
 >
 > **Our note:**
